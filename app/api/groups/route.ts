@@ -6,13 +6,21 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
+interface GroupResult {
+  id: number;
+  name: string;
+  created_at: string;
+  total_expense: string | number;
+  total_income: string | number;
+}
+
 export async function GET(request: NextRequest) {
   const session = requireSession(request);
   if (isErrorResponse(session)) return session;
 
   try {
     // Get all groups and compute total spent/income
-    const groups = await sql`
+    const groups = await sql<GroupResult[]>`
       SELECT 
         g.id, 
         g.name, 
@@ -25,10 +33,10 @@ export async function GET(request: NextRequest) {
       ORDER BY g.created_at DESC
     `;
 
-    return NextResponse.json(groups.map((g: any) => ({
+    return NextResponse.json(groups.map((g) => ({
       ...g,
-      total_expense: parseFloat(g.total_expense),
-      total_income: parseFloat(g.total_income),
+      total_expense: typeof g.total_expense === 'string' ? parseFloat(g.total_expense) : g.total_expense,
+      total_income: typeof g.total_income === 'string' ? parseFloat(g.total_income) : g.total_income,
     })));
   } catch (error) {
     console.error('Fetch groups error:', error);
@@ -54,9 +62,10 @@ export async function POST(request: NextRequest) {
     `;
 
     return NextResponse.json(result[0], { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create group error:', error);
-    if (error.message?.includes('unique constraint')) {
+    const message = error instanceof Error ? error.message : '';
+    if (message.includes('unique constraint')) {
       return NextResponse.json({ error: 'A group with this name already exists' }, { status: 400 });
     }
     return NextResponse.json({ error: 'Failed to create group' }, { status: 500 });

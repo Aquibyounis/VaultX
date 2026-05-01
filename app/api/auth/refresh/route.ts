@@ -10,11 +10,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Refresh the token
-    const { token, session: newSession } = createSessionToken(session.role);
+    const { token, session: refreshedSession } = createSessionToken(session.role);
 
     const response = NextResponse.json({
       success: true,
-      expiresAt: newSession.expiresAt
+      expiresAt: refreshedSession.expiresAt
     });
 
     response.cookies.set(SESSION_COOKIE, token, {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Refresh failed' }, { status: 500 });
   }
 }

@@ -8,6 +8,7 @@ export function getSQL() {
 }
 
 // Tagged template sql function - lazy initialized
-export const sql = (...args: [TemplateStringsArray, ...unknown[]]) => {
-  return getSQL()(...args);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const sql = <T = any>(...args: [TemplateStringsArray, ...unknown[]]): Promise<T> => {
+  return getSQL()(...args) as unknown as Promise<T>;
 };

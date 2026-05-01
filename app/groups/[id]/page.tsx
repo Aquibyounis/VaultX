@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/context/SessionContext';
 import { useApp } from '@/context/AppContext';
@@ -8,24 +8,42 @@ import { ArrowLeft, Trash2, LayoutGrid, FileText, Plus } from 'lucide-react';
 import Link from 'next/link';
 import DateCarousel from '@/components/DateCarousel';
 
+interface Invoice {
+  id: number;
+  title: string;
+  amount: number;
+  type: 'expense' | 'income';
+  date: string;
+  category_name?: string;
+  category_icon?: string;
+  category_color?: string;
+}
+
 interface GroupDetails {
   id: number;
   name: string;
   total_expense: number;
   total_income: number;
-  invoices: any[];
+  invoices: Invoice[];
+}
+
+interface Category {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
 }
 
 export default function GroupDetailsPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { isEditor, isViewer } = useSession();
+  const { isViewer } = useSession();
   const { currency, showToast, refreshBalance } = useApp();
   
   const [group, setGroup] = useState<GroupDetails | null>(null);
   const [loading, setLoading] = useState(true);
   
   // Mini form state
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'expense' | 'income'>('expense');
@@ -34,7 +52,7 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const fetchGroup = async () => {
+  const fetchGroup = useCallback(async () => {
     try {
       const res = await fetch(`/api/groups/${params.id}?_t=${Date.now()}`);
       if (res.ok) {
@@ -46,14 +64,14 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
       showToast('Failed to load group', 'error');
     }
     setLoading(false);
-  };
+  }, [params.id, router, showToast]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const res = await fetch(`/api/categories?_t=${Date.now()}`);
       if (res.ok) setCategories(await res.json());
     } catch {}
-  };
+  }, []);
 
   useEffect(() => {
     if (!isViewer) {
@@ -62,7 +80,7 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
     } else {
       router.push('/');
     }
-  }, [isViewer]);
+  }, [isViewer, fetchGroup, fetchCategories, router]);
 
   const handleDeleteInvoice = async (invoiceId: number) => {
     if (!window.confirm('Delete this invoice?')) return;

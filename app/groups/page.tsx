@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/context/SessionContext';
 import { useApp } from '@/context/AppContext';
-import { LayoutGrid, Plus, Lock, ArrowRight, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { LayoutGrid, Plus, Lock, ArrowRight } from 'lucide-react';
 import DateCarousel from '@/components/DateCarousel';
 
 interface Group {
@@ -16,8 +15,7 @@ interface Group {
 }
 
 export default function GroupsPage() {
-  const router = useRouter();
-  const { isEditor, isViewer } = useSession();
+  const { isViewer } = useSession();
   const { currency, showToast } = useApp();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +25,7 @@ export default function GroupsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [creating, setCreating] = useState(false);
 
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
     try {
       const res = await fetch(`/api/groups?_t=${Date.now()}`);
       if (res.ok) {
@@ -37,11 +35,11 @@ export default function GroupsPage() {
       showToast('Failed to load groups', 'error');
     }
     setLoading(false);
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchGroups();
-  }, []);
+  }, [fetchGroups]);
 
   if (isViewer) {
     return (

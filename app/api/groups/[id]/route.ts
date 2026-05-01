@@ -6,6 +6,20 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
+interface InvoiceResult {
+  id: number;
+  title: string;
+  amount: string | number;
+  category_id: number | null;
+  type: 'expense' | 'income';
+  note: string | null;
+  date: string;
+  group_id: number | null;
+  category_name?: string;
+  category_icon?: string;
+  category_color?: string;
+}
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = requireSession(request);
   if (isErrorResponse(session)) return session;
@@ -31,7 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
-    const invoices = await sql`
+    const invoices = await sql<InvoiceResult[]>`
       SELECT i.id, i.title, i.amount, i.category_id, i.type, i.note, i.date, i.group_id,
              c.name as category_name, c.icon as category_icon, c.color as category_color
       FROM invoices i
@@ -44,9 +58,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       ...groups[0],
       total_expense: parseFloat(groups[0].total_expense),
       total_income: parseFloat(groups[0].total_income),
-      invoices: invoices.map((inv: any) => ({
+      invoices: invoices.map((inv) => ({
         ...inv,
-        amount: parseFloat(inv.amount),
+        amount: typeof inv.amount === 'string' ? parseFloat(inv.amount) : inv.amount,
       }))
     });
   } catch (error) {
@@ -71,7 +85,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     let balanceAdjustment = 0;
     
     for (const inv of invoices) {
-      const amount = parseFloat(inv.amount);
+      const amount = parseFloat(inv.amount as string);
       if (inv.type === 'expense') {
         balanceAdjustment += amount; // We get money back from deleted expenses
       } else {
