@@ -166,6 +166,12 @@ export default function Navbar() {
           <span className={`text-xs font-mono ${isWarning ? 'text-yellow-400' : 'text-muted'}`}>
             {formatTime(timeRemaining)}
           </span>
+          <Link
+            href="/settings"
+            className="p-2 rounded-lg hover:bg-elevated transition-colors text-muted hover:text-foreground"
+          >
+            <Settings size={18} />
+          </Link>
           <button
             onClick={lock}
             className="p-2 rounded-lg hover:bg-elevated transition-colors text-muted hover:text-foreground"
