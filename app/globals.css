@@ -3,25 +3,146 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --surface: #111111;
+  --elevated: #1a1a1a;
+  --border: #2a2a2a;
+  --foreground: #ffffff;
+  --muted: #888888;
+  --income: #22c55e;
+  --expense: #ef4444;
+  --accent: #22c55e;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
+  background-color: var(--background);
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Input styles */
+input, textarea, select {
+  background-color: var(--elevated);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  outline: none;
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted);
+}
+
+/* Number input - hide spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Button base */
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Card utility */
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded-2xl p-4;
   }
+
+  .card-elevated {
+    @apply bg-elevated border border-border rounded-2xl p-4;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-black font-semibold py-3 px-6 rounded-xl hover:opacity-90 active:scale-[0.97] transition-all disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply bg-expense text-white font-semibold py-3 px-6 rounded-xl hover:opacity-90 active:scale-[0.97] transition-all disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-muted hover:text-foreground py-2 px-4 rounded-xl transition-all;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  .chip-income {
+    @apply chip bg-income/15 text-income;
+  }
+
+  .chip-expense {
+    @apply chip bg-expense/15 text-expense;
+  }
+}
+
+/* Animation for page transitions */
+.page-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Toast animations */
+.toast-enter {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+.toast-exit {
+  animation: slideUp 0.3s ease-in reverse forwards;
 }
