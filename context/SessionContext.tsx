@@ -90,9 +90,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const resetTimer = useCallback(() => {
     if (!role || !expiresAt) return;
 
-    const newExpiry = Date.now() + 5 * 60 * 1000;
+    const newExpiry = Date.now() + 60 * 60 * 1000;
     setExpiresAt(newExpiry);
     localStorage.setItem('mt_session', JSON.stringify({ role, expiresAt: newExpiry }));
+    
+    // Refresh server-side cookie
+    fetch('/api/auth/refresh', { method: 'POST' }).catch(() => {});
   }, [role, expiresAt]);
 
   useEffect(() => {

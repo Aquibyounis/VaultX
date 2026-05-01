@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
 const SESSION_COOKIE = 'mt_session';
-const SESSION_DURATION = 5 * 60 * 1000; // 5 minutes
+const SESSION_DURATION = 60 * 60 * 1000; // 60 minutes
 
 interface SessionData {
   role: 'editor' | 'viewer';

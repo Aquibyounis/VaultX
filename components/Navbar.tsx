@@ -79,7 +79,6 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={item.href === '/add' ? handleAddClick : undefined}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium ${
                   isActive
                     ? 'bg-accent/10 text-accent'
