@@ -6,6 +6,7 @@ import { useSession } from '@/context/SessionContext';
 import { useApp } from '@/context/AppContext';
 import { LayoutGrid, Plus, Lock, ArrowRight, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import DateCarousel from '@/components/DateCarousel';
 
 interface Group {
   id: number;
@@ -23,6 +24,7 @@ export default function GroupsPage() {
   
   const [showCreate, setShowCreate] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [creating, setCreating] = useState(false);
 
   const fetchGroups = async () => {
@@ -60,7 +62,10 @@ export default function GroupsPage() {
       const res = await fetch('/api/groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newGroupName }),
+        body: JSON.stringify({ 
+          name: newGroupName,
+          created_at: selectedDate.toISOString()
+        }),
       });
       
       if (res.ok) {
@@ -101,28 +106,36 @@ export default function GroupsPage() {
       </div>
 
       {showCreate && (
-        <form onSubmit={handleCreateGroup} className="mb-8 p-4 bg-elevated border border-border rounded-2xl animate-in fade-in slide-in-from-top-4">
-          <div className="flex gap-3">
+        <form onSubmit={handleCreateGroup} className="mb-8 p-6 bg-elevated border border-border rounded-2xl animate-in fade-in slide-in-from-top-4 space-y-6 shadow-xl">
+          <div className="space-y-2">
+            <label className="text-xs text-muted block px-1">Group Name</label>
             <input
               type="text"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
               placeholder="e.g., Trip to Paris, Wedding..."
-              className="flex-1 bg-surface border-border text-sm"
+              className="w-full bg-surface border-border text-sm p-4 rounded-xl"
               autoFocus
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <DateCarousel selectedDate={selectedDate} onChange={setSelectedDate} />
+          </div>
+
+          <div className="flex gap-3 pt-2">
             <button 
               type="submit" 
               disabled={creating}
-              className="bg-accent text-black px-6 rounded-xl font-medium text-sm disabled:opacity-50"
+              className="flex-1 bg-accent text-black py-4 rounded-xl font-bold text-sm shadow-lg shadow-accent/20 active:scale-[0.98] transition-transform disabled:opacity-50"
             >
-              {creating ? '...' : 'Create'}
+              {creating ? 'Creating...' : 'Create Group'}
             </button>
             <button 
               type="button"
               onClick={() => setShowCreate(false)}
-              className="px-4 text-muted hover:text-foreground text-sm font-medium"
+              className="px-6 text-muted hover:text-foreground text-sm font-medium"
             >
               Cancel
             </button>

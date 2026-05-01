@@ -41,15 +41,15 @@ export async function POST(request: NextRequest) {
   if (isErrorResponse(session)) return session;
 
   try {
-    const { name } = await request.json();
+    const { name, created_at } = await request.json();
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: 'Group name is required' }, { status: 400 });
     }
 
     const result = await sql`
-      INSERT INTO groups (name)
-      VALUES (${name.trim()})
+      INSERT INTO groups (name, created_at)
+      VALUES (${name.trim()}, ${created_at ? created_at : new Date().toISOString()}::timestamp)
       RETURNING *
     `;
 

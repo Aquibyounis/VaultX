@@ -6,6 +6,7 @@ import { useSession } from '@/context/SessionContext';
 import { useApp } from '@/context/AppContext';
 import { ArrowLeft, Trash2, LayoutGrid, FileText, Plus } from 'lucide-react';
 import Link from 'next/link';
+import DateCarousel from '@/components/DateCarousel';
 
 interface GroupDetails {
   id: number;
@@ -29,6 +30,7 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -85,6 +87,10 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
     
     setAdding(true);
     try {
+      const finalDate = new Date(selectedDate);
+      const now = new Date();
+      finalDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+
       const res = await fetch('/api/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,7 +100,7 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
           type,
           category_id: categoryId,
           group_id: parseInt(params.id),
-          date: new Date().toISOString(),
+          date: finalDate.toISOString(),
         }),
       });
 
@@ -182,7 +188,7 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
 
       {/* Mini Add Form */}
       <div className="bg-surface border border-border rounded-2xl p-4 mb-8 shadow-sm">
-        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2 px-1">
           <Plus size={16} className="text-accent" /> Quick Add to Group
         </h3>
         <form onSubmit={handleAddInvoice} className="space-y-4">
@@ -212,6 +218,14 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
             </div>
           </div>
           
+          {/* Date Selection */}
+          <div>
+            <DateCarousel 
+              selectedDate={selectedDate} 
+              onChange={setSelectedDate} 
+            />
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
             <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 hide-scrollbar">
               <select
@@ -236,7 +250,7 @@ export default function GroupDetailsPage({ params }: { params: { id: string } })
             <button 
               type="submit" 
               disabled={adding}
-              className="w-full sm:w-auto bg-accent text-black px-6 py-2 rounded-xl text-sm font-medium disabled:opacity-50 shrink-0"
+              className="w-full sm:w-auto bg-accent text-black px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-accent/20 active:scale-[0.98] transition-transform shrink-0"
             >
               {adding ? 'Adding...' : 'Add'}
             </button>

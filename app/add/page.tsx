@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from '@/context/SessionContext';
 import { useApp } from '@/context/AppContext';
 import { Lock } from 'lucide-react';
+import DateCarousel from '@/components/DateCarousel';
 
 interface Category {
   id: number;
@@ -24,7 +25,7 @@ export default function AddInvoicePage() {
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 16));
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -56,6 +57,11 @@ export default function AddInvoicePage() {
 
     setLoading(true);
     try {
+      // Create a final date with selected day but current time
+      const finalDate = new Date(selectedDate);
+      const now = new Date();
+      finalDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+
       const res = await fetch('/api/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,7 +70,7 @@ export default function AddInvoicePage() {
           amount: parseFloat(amount),
           type,
           category_id: categoryId,
-          date,
+          date: finalDate.toISOString(),
           note: note.trim() || null,
         }),
       });
@@ -90,7 +96,7 @@ export default function AddInvoicePage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Title */}
         <div>
-          <label className="text-xs text-muted mb-1.5 block">Title</label>
+          <label className="text-xs text-muted mb-1.5 block px-1">Title</label>
           <input
             type="text"
             value={title}
@@ -102,7 +108,7 @@ export default function AddInvoicePage() {
 
         {/* Amount */}
         <div>
-          <label className="text-xs text-muted mb-1.5 block">Amount</label>
+          <label className="text-xs text-muted mb-1.5 block px-1">Amount</label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">{currency}</span>
             <input
@@ -120,7 +126,7 @@ export default function AddInvoicePage() {
 
         {/* Type toggle */}
         <div>
-          <label className="text-xs text-muted mb-1.5 block">Type</label>
+          <label className="text-xs text-muted mb-1.5 block px-1">Type</label>
           <div className="flex bg-surface border border-border rounded-xl overflow-hidden">
             <button
               type="button"
@@ -149,7 +155,7 @@ export default function AddInvoicePage() {
 
         {/* Category selector */}
         <div>
-          <label className="text-xs text-muted mb-1.5 block">Category</label>
+          <label className="text-xs text-muted mb-1.5 block px-1">Category</label>
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
@@ -169,20 +175,17 @@ export default function AddInvoicePage() {
           </div>
         </div>
 
-        {/* Date */}
-        <div>
-          <label className="text-xs text-muted mb-1.5 block">Date & Time</label>
-          <input
-            type="datetime-local"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="[color-scheme:dark]"
+        {/* Date Carousel */}
+        <div className="pt-2">
+          <DateCarousel 
+            selectedDate={selectedDate} 
+            onChange={setSelectedDate} 
           />
         </div>
 
         {/* Note */}
         <div>
-          <label className="text-xs text-muted mb-1.5 block">Note (optional)</label>
+          <label className="text-xs text-muted mb-1.5 block px-1">Note (optional)</label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -193,10 +196,10 @@ export default function AddInvoicePage() {
         </div>
 
         {/* Submit */}
-        <button type="submit" disabled={loading} className="btn-primary w-full">
+        <button type="submit" disabled={loading} className="btn-primary w-full h-14 rounded-2xl shadow-lg shadow-accent/20 active:scale-[0.98] transition-transform">
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
               Adding...
             </span>
           ) : (
